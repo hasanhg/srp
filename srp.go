@@ -301,7 +301,7 @@ func (s *SRP) Key() ([]byte, error) {
 	s.premasterKey.Exp(b, e, s.group.n)
 
 	h := sha256.New()
-	if _, err := h.Write([]byte(fmt.Sprintf("%x", s.premasterKey))); err != nil {
+	if _, err := h.Write(s.premasterKey.Bytes()); err != nil {
 		return nil, fmt.Errorf("failed to write premasterKey to hasher: %v", err)
 	}
 
@@ -310,5 +310,6 @@ func (s *SRP) Key() ([]byte, error) {
 	if len(s.key) != h.Size() {
 		return nil, fmt.Errorf("key size should be %d, but instead is %d", h.Size(), len(s.key))
 	}
+
 	return s.key, nil
 }

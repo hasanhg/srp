@@ -1,8 +1,8 @@
 package srp
 
 import (
-	"crypto/subtle"
 	"crypto/sha256"
+	"crypto/subtle"
 	"fmt"
 )
 
@@ -36,12 +36,12 @@ func (s *SRP) M(salt []byte, uname string) ([]byte, error) {
 		return nil, fmt.Errorf("XOR had %d bytes instead of %d",
 			length, sha256.Size)
 	}
-	groupHash := sha256.Sum256(groupXOR)
-
+	//groupHash := sha256.Sum256(groupXOR)
 	uHash := sha256.Sum256([]byte(uname))
+
 	h := sha256.New()
 
-	if _, err := h.Write(groupHash[:]); err != nil {
+	if _, err := h.Write(groupXOR); err != nil {
 		return nil, fmt.Errorf("failed to write group hash to hasher: %v", err)
 	}
 	if _, err := h.Write(uHash[:]); err != nil {
@@ -62,6 +62,21 @@ func (s *SRP) M(salt []byte, uname string) ([]byte, error) {
 
 	s.m = h.Sum(nil)
 	return s.m, nil
+}
+
+func (s *SRP) ServerProof() ([]byte, error) {
+	h := sha256.New()
+	if _, err := h.Write(s.ephemeralPublicA.Bytes()); err != nil {
+		return nil, fmt.Errorf("failed to write A to hasher: %v", err)
+	}
+	if _, err := h.Write(s.m); err != nil {
+		return nil, fmt.Errorf("failed to write M to hasher: %v", err)
+	}
+	if _, err := h.Write(s.key); err != nil {
+		return nil, fmt.Errorf("failed to write key to hasher: %v", err)
+	}
+
+	return h.Sum(nil), nil
 }
 
 // GoodServerProof takes the post-key negotiation proof from the server

@@ -163,12 +163,16 @@ func (s *SRP) calculateU() (*big.Int, error) {
 
 	h := sha256.New()
 
-	trimmedHexPublicA := serverStyleHexFromBigInt(s.ephemeralPublicA)
-	trimmedHexPublicB := serverStyleHexFromBigInt(s.ephemeralPublicB)
+	//trimmedHexPublicA := serverStyleHexFromBigInt(s.ephemeralPublicA)
+	//trimmedHexPublicB := serverStyleHexFromBigInt(s.ephemeralPublicB)
 
-	_, err := h.Write([]byte(fmt.Sprintf("%s%s", trimmedHexPublicA, trimmedHexPublicB)))
+	_, err := h.Write(s.ephemeralPublicA.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("failed to write to hasher: %v", err)
+		return nil, fmt.Errorf("failed to write A to hasher: %v", err)
+	}
+	_, err = h.Write(s.ephemeralPublicB.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("failed to write B to hasher: %v", err)
 	}
 
 	u := &big.Int{}
